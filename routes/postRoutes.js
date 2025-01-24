@@ -115,7 +115,8 @@ router.post(
         // Assign the new image
         post.image = req.file.buffer.toString('base64');
       }
-
+      post.title = req.body.title;
+      post.content = req.body.content;
       // Save the updated post
       await post.save();
       req.flash('success', 'Post updated successfully!');
@@ -166,4 +167,10 @@ router.post(
     }
   }
 );
+
+// Delete post
+router.route('/delete-post/:id').delete(async function (req, res) {
+  await Post.findByIdAndDelete(req.params.id);
+  res.redirect('/my-posts');
+});
 export default router;

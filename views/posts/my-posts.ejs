@@ -52,11 +52,14 @@
                     href="/edit-post/<%= post._id %>"
                     >Edit</a
                   >
-                  <a
-                    class="btn btn-sm btn-danger"
-                    href="/delete-post/<%= post._id %>"
-                    >Delete</a
+                  <form
+                    action="/delete-post/<%=post._id%>?_method=DELETE"
+                    method="POST"
                   >
+                    <button class="btn btn-sm btn-danger" type="submit">
+                      Delete
+                    </button>
+                  </form>
                 </td>
               </tr>
               <% }) %>

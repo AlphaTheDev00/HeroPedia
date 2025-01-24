@@ -9,12 +9,14 @@ import dotenv from 'dotenv';
 import path from 'path';
 import MongoStore from 'connect-mongo';
 import serverless from 'serverless-http';
+import methodOverride from 'method-override';
 const app = express();
 dotenv.config();
 
 connectDB();
 
 // middlewares
+app.use(methodOverride('_method'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 

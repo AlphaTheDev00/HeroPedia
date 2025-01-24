@@ -7,12 +7,14 @@ import session from 'express-session';
 import flash from 'connect-flash';
 import dotenv from 'dotenv';
 import path from 'path';
+import methodOverride from 'method-override';
 const app = express();
 dotenv.config();
 
 connectDB();
 
 // middlewares
+app.use(methodOverride('_method'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
