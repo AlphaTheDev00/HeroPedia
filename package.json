@@ -27,7 +27,8 @@
     "nodemailer": "^6.9.16",
     "path": "^0.12.7",
     "path-dirname": "^1.0.2",
-    "serverless-http": "^3.2.0"
+    "serverless-http": "^3.2.0",
+    "netlify-cli": "18.0.2"
   },
   "devDependencies": {
     "nodemon": "^3.1.9"

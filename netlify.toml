@@ -8,3 +8,7 @@
   from = "/*"
   status = 200
   to = "/.netlify/functions/api/:splat"
+
+  [build]
+  functions = "/opt/build/repo/netlify/functions"
+  node_bundler = "esbuild"
