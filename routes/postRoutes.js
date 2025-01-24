@@ -6,6 +6,9 @@ import User from '../models/userModel.js';
 import Post from '../models/postModel.js';
 import { unlink } from 'fs';
 import fsPromises from 'fs/promises';
+import path from 'path';
+
+const dbPath = path.resolve(__dirname, '../db.js');
 
 const router = express.Router();
 
