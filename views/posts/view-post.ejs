@@ -5,26 +5,18 @@
       <div class="card shadow">
         <div class="card-body p-5">
           <img
-            src="https://img.freepik.com/free-photo/digital-art-moon-tree-wallpaper_23-2150918811.jpg"
+            src="data:image/jpeg;base64,<%= post.image %>"
             class="img-fluid"
             alt="wallpaper"
           />
           <div
             class="lead my-3 d-flex align-items-center fw-semibold justify-content-between text-secondary flex-wrap gap-2"
           >
-            <div>Author: YAssine Ch</div>
-            <div>Created: 1/23/2025</div>
+            <div>Author: <%= post.user.name %></div>
+            <div>Created: <%= post.createdAt %></div>
           </div>
-          <h1 class="text-secondary fw-bold">Wallpaper</h1>
-          <p>
-            Lorem ipsum, dolor sit amet consectetur adipisicing elit. Ratione
-            expedita fuga nostrum vitae dignissimos inventore ullam suscipit
-            vero! Odit vel saepe commodi accusantium praesentium, officia nisi
-            neque mollitia adipisci doloribus. Lorem ipsum dolor sit, amet
-            consectetur adipisicing elit. Excepturi soluta consequuntur ab nobis
-            omnis delectus sunt. Porro tempora rem possimus quod quos, fuga
-            repellat, hic ratione cumque id ducimus voluptates?
-          </p>
+          <h1 class="text-secondary fw-bold"><%= post.title %></h1>
+          <p><%= post.content %></p>
         </div>
       </div>
     </div>

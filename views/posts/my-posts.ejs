@@ -36,7 +36,7 @@
                 <td><%= post.content.substring(0,50) %>...</td>
                 <td>
                   <img
-                    src="/uploads/<%= post.image %>"
+                    src="data:image/jpeg;base64,<%= post.image %>"
                     alt="<%= post.title %>"
                     class="img-fluid img-thumbnail"
                     width="100"
@@ -44,9 +44,7 @@
                 </td>
                 <td><%= post.createdAt.toLocaleDateString() %></td>
                 <td>
-                  <a
-                    class="btn btn-sm btn-success"
-                    href="/post/<%= post.slug %>"
+                  <a class="btn btn-sm btn-success" href="/post/<%= post._id %>"
                     >View</a
                   >
                   <a

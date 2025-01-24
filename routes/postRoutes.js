@@ -1,24 +1,25 @@
 import express from 'express';
 import { protectedRoute } from '../middlewares/authMiddleware.js';
 import multer from 'multer';
-import path from 'path';
+//import path from 'path';
 import User from '../models/userModel.js';
 import Post from '../models/postModel.js';
-import fsPromises from 'fs/promises';
+//import fsPromises from 'fs/promises';
+//import { fileURLToPath } from 'url';
 
-const dbPath = path.resolve(__dirname, '../db.js');
+//const dbPath = fileURLToPath(new URL('../db.js', import.meta.url));
 
 const router = express.Router();
 
 // set up storage engine using multer
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, 'uploads/');
-  },
-  filename: function (req, file, cb) {
-    cb(null, Date.now() + path.extname(file.originalname));
-  },
-});
+//const storage = multer.diskStorage({
+//destination: function (req, file, cb) {
+//cb(null, 'uploads/');
+//},
+//   filename: function (req, file, cb) {
+//     cb(null, Date.now() + path.extname(file.originalname));
+//   },
+// });
 // File filter to allow only JPEG
 const fileFilter = (req, file, cb) => {
   if (file.mimetype === 'image/jpeg') {
@@ -28,7 +29,11 @@ const fileFilter = (req, file, cb) => {
   }
 };
 // initilize upload variale with the storage engine
-const upload = multer({ storage: storage, fileFilter: fileFilter });
+const upload = multer({
+  storage: multer.memoryStorage(),
+  fileFilter: fileFilter,
+  limits: { fileSize: 1 * 1024 * 1024 },
+});
 
 // route for home page
 router.get('/', (req, res) => {
@@ -97,18 +102,18 @@ router.post(
 
       if (req.file) {
         // Delete the old image if it exists
-        if (post.image) {
-          try {
-            await fsPromises.unlink(
-              path.join(process.cwd(), 'uploads', post.image)
-            );
-          } catch (err) {
-            console.error(`Error deleting file: ${err.message}`);
-          }
-        }
+        // if (post.image) {
+        //   try {
+        //     await fsPromises.unlink(
+        //       path.join(process.cwd(), 'uploads', post.image)
+        //     );
+        //   } catch (err) {
+        //     console.error(`Error deleting file: ${err.message}`);
+        //   }
+        // }
 
         // Assign the new image
-        post.image = req.file.filename;
+        post.image = req.file.buffer.toString('base64');
       }
 
       // Save the updated post
@@ -123,8 +128,13 @@ router.post(
   }
 );
 // route for view post in detail
-router.get('/post/:id', (req, res) => {
-  res.render('posts/view-post', { title: 'View Post', active: 'view_post' });
+router.get('/post/:id', async (req, res) => {
+  const post = await Post.findById(req.params.id).populate('user');
+  res.render('posts/view-post', {
+    title: 'View Post',
+    active: 'view_post',
+    post,
+  });
 });
 
 // handle create new post request
@@ -135,10 +145,10 @@ router.post(
   async (req, res) => {
     try {
       const { title, content } = req.body;
-      const image = req.file.filename;
+      //const fileName = req.file.filename;
       const slug = title.replace(/\s+/g, '-').toLowerCase();
       const user = await User.findById(req.session.user._id);
-
+      const image = req.file.buffer.toString('base64');
       // create new post
       const post = new Post({ title, slug, content, image, user });
       // save post in suer posts array
