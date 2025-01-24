@@ -13,7 +13,7 @@
             class="lead my-3 d-flex align-items-center fw-semibold justify-content-between text-secondary flex-wrap gap-2"
           >
             <div>Author: <%= post.user.name %></div>
-            <div>Created: <%= post.createdAt %></div>
+            <div>Created: <%= post.createdAt.toLocaleDateString() %></div>
           </div>
           <h1 class="text-secondary fw-bold"><%= post.title %></h1>
           <p><%= post.content %></p>

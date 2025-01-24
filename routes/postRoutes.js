@@ -1,25 +1,11 @@
 import express from 'express';
 import { protectedRoute } from '../middlewares/authMiddleware.js';
 import multer from 'multer';
-//import path from 'path';
 import User from '../models/userModel.js';
 import Post from '../models/postModel.js';
-//import fsPromises from 'fs/promises';
-//import { fileURLToPath } from 'url';
-
-//const dbPath = fileURLToPath(new URL('../db.js', import.meta.url));
 
 const router = express.Router();
 
-// set up storage engine using multer
-//const storage = multer.diskStorage({
-//destination: function (req, file, cb) {
-//cb(null, 'uploads/');
-//},
-//   filename: function (req, file, cb) {
-//     cb(null, Date.now() + path.extname(file.originalname));
-//   },
-// });
 // File filter to allow only JPEG
 const fileFilter = (req, file, cb) => {
   if (file.mimetype === 'image/jpeg') {
@@ -28,19 +14,31 @@ const fileFilter = (req, file, cb) => {
     cb(new Error('Only JPEG files are allowed!'), false); // Reject the file
   }
 };
-// initilize upload variale with the storage engine
+
+// Initialize upload variable with the storage engine
 const upload = multer({
   storage: multer.memoryStorage(),
   fileFilter: fileFilter,
-  limits: { fileSize: 1 * 1024 * 1024 },
+  limits: { fileSize: 1 * 1024 * 1024 }, // Limit file size to 1MB
 });
 
-// route for home page
-router.get('/', (req, res) => {
-  res.render('index.ejs', { title: 'Home Page', active: 'home' });
+// Route for home page
+router.get('/', async (req, res) => {
+  try {
+    const posts = await Post.find().populate('user'); // Fetch posts and populate user data
+    res.render('index.ejs', {
+      title: 'Home Page',
+      active: 'home',
+      posts, // Pass posts to the template
+    });
+  } catch (error) {
+    console.error('Error fetching posts:', error);
+    req.flash('error', 'Unable to fetch posts at this time.');
+    res.redirect('/');
+  }
 });
 
-// route for my posts page
+// Route for my posts page
 router.get('/my-posts', protectedRoute, async (req, res) => {
   try {
     const userId = req.session.user._id;
@@ -57,12 +55,12 @@ router.get('/my-posts', protectedRoute, async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    req.flash('error', 'An error occured while fetching your posts!');
+    req.flash('error', 'An error occurred while fetching your posts!');
     res.redirect('/my-posts');
   }
 });
 
-// route for create new post page
+// Route for create new post page
 router.get('/create-post', protectedRoute, (req, res) => {
   res.render('posts/create-post', {
     title: 'Create Post',
@@ -70,7 +68,7 @@ router.get('/create-post', protectedRoute, (req, res) => {
   });
 });
 
-// route edit post page
+// Route for edit post page
 router.get('/edit-post/:id', protectedRoute, async (req, res) => {
   try {
     const postId = req.params.id;
@@ -90,7 +88,8 @@ router.get('/edit-post/:id', protectedRoute, async (req, res) => {
     res.redirect('/my-posts');
   }
 });
-// handle update a postrequest
+
+// Handle update a post request
 router.post(
   '/update-post/:id',
   protectedRoute,
@@ -101,34 +100,24 @@ router.post(
       const post = await Post.findById(postId);
 
       if (req.file) {
-        // Delete the old image if it exists
-        // if (post.image) {
-        //   try {
-        //     await fsPromises.unlink(
-        //       path.join(process.cwd(), 'uploads', post.image)
-        //     );
-        //   } catch (err) {
-        //     console.error(`Error deleting file: ${err.message}`);
-        //   }
-        // }
-
-        // Assign the new image
         post.image = req.file.buffer.toString('base64');
       }
       post.title = req.body.title;
       post.content = req.body.content;
+
       // Save the updated post
       await post.save();
       req.flash('success', 'Post updated successfully!');
       res.redirect('/my-posts');
     } catch (error) {
       console.error(error);
-      req.flash('error', 'Something wnt wrong!');
+      req.flash('error', 'Something went wrong!');
       res.redirect('/my-posts');
     }
   }
 );
-// route for view post in detail
+
+// Route for view post in detail
 router.get('/post/:id', async (req, res) => {
   const post = await Post.findById(req.params.id).populate('user');
   res.render('posts/view-post', {
@@ -138,7 +127,7 @@ router.get('/post/:id', async (req, res) => {
   });
 });
 
-// handle create new post request
+// Handle create new post request
 router.post(
   '/create-post',
   protectedRoute,
@@ -146,13 +135,14 @@ router.post(
   async (req, res) => {
     try {
       const { title, content } = req.body;
-      //const fileName = req.file.filename;
       const slug = title.replace(/\s+/g, '-').toLowerCase();
       const user = await User.findById(req.session.user._id);
       const image = req.file.buffer.toString('base64');
-      // create new post
+
+      // Create new post
       const post = new Post({ title, slug, content, image, user });
-      // save post in suer posts array
+
+      // Save post in user posts array
       await User.updateOne(
         { _id: req.session.user._id },
         { $push: { posts: post._id } }
@@ -173,4 +163,5 @@ router.route('/delete-post/:id').delete(async function (req, res) {
   await Post.findByIdAndDelete(req.params.id);
   res.redirect('/my-posts');
 });
+
 export default router;
