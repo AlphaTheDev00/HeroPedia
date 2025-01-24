@@ -19,7 +19,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 // make uploads directory as static
-app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
+app.use('/public', express.static(path.join(process.cwd(), 'public')));
 
 // cookie middleware
 app.use(cookieParser(process.env.COOKIE_SECRET));

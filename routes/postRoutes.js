@@ -34,7 +34,7 @@ const upload = multer({ storage: storage, fileFilter: fileFilter });
 
 // route for home page
 router.get('/', (req, res) => {
-  res.render('index', { title: 'Home Page', active: 'home' });
+  res.render('index.ejs', { title: 'Home Page', active: 'home' });
 });
 
 // route for my posts page
