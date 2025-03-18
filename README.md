@@ -4,7 +4,7 @@
 HeroPedia is a full-stack web application built using Node.js, Express, and MongoDB. This project was developed as part of the General Assembly Software Engineering Immersive course. HeroPedia serves as a platform where users can create accounts, share posts with images, and interact with content from other users. The application demonstrates implementation of authentication, CRUD operations, and responsive design principles.
 
 ## 🚀 Deployment Link
-[HeroPedia Live Site](https://heropedia.netlify.app)
+[HeroPedia Live Site](https://hero-share-pedia.netlify.app/)
 
 *Note: You can register for a new account or use the following test credentials:*
 - Email: test@example.com
