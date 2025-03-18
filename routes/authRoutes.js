@@ -118,15 +118,16 @@ router.post('/forgot-password', async (req, res) => {
       req.flash('error', 'User not found with this email');
       return res.redirect('/forgot-password');
     }
-    const token = Math.random().toString(36).slice(2);
+    // Generate a more secure token using crypto
+    const token = crypto.randomBytes(32).toString('hex');
     user.token = token;
     await user.save();
     const info = await transport.sendMail({
-      from: '"HeroPedia" <fordev77@gmail.com>', // sender address
+      from: process.env.EMAIL_FROM || '"HeroPedia" <fordev77@gmail.com>', // sender address
       to: email, // list of receivers
       subject: 'Password Reset', // Subject line
       text: 'Reset your password', // plain text body
-      html: `<p>Click this link to reset your password: <a href="http://localhost:3000/reset-password/${token}">Reset Password</a><br>Thank you!</p>`, // html body
+      html: `<p>Click this link to reset your password: <a href="${process.env.APP_URL || 'http://localhost:3000'}/reset-password/${token}">Reset Password</a><br>Thank you!</p>`, // html body
     });
 
     if (info.messageId) {
@@ -146,13 +147,13 @@ router.post('/reset-password', async (req, res) => {
   try {
     const user = await User.findOne({ token });
     if (new_password !== confirm_new_password) {
-      req.flash('error', 'Password do not match');
-      return res.redirect(`reset-password/${token}`);
+      req.flash('error', 'Passwords do not match');
+      return res.redirect(`/reset-password/${token}`);
     }
 
     if (!user) {
       req.flash('error', 'Invalid token!');
-      return res.redirect('/forget-password');
+      return res.redirect('/forgot-password');
     }
 
     user.password = await bcrypt.hash(new_password, 10);
@@ -161,9 +162,9 @@ router.post('/reset-password', async (req, res) => {
     req.flash('success', 'Password reset successful!');
     res.redirect('/login');
   } catch (error) {
-    console.erro(error);
+    console.error(error);
     req.flash('error', 'Something went wrong, try again!');
-    res.redirect('/reset-password');
+    res.redirect('/forgot-password');
   }
 });
 

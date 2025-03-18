@@ -119,12 +119,22 @@ router.post(
 
 // Route for view post in detail
 router.get('/post/:id', async (req, res) => {
-  const post = await Post.findById(req.params.id).populate('user');
-  res.render('posts/view-post', {
-    title: 'View Post',
-    active: 'view_post',
-    post,
-  });
+  try {
+    const post = await Post.findById(req.params.id).populate('user');
+    if (!post) {
+      req.flash('error', 'Post not found!');
+      return res.redirect('/');
+    }
+    res.render('posts/view-post', {
+      title: 'View Post',
+      active: 'view_post',
+      post,
+    });
+  } catch (error) {
+    console.error(error);
+    req.flash('error', 'Something went wrong!');
+    res.redirect('/');
+  }
 });
 
 // Handle create new post request
@@ -135,8 +145,22 @@ router.post(
   async (req, res) => {
     try {
       const { title, content } = req.body;
+      
+      // Validate required fields
+      if (!title || !content) {
+        req.flash('error', 'Title and content are required!');
+        return res.redirect('/create-post');
+      }
+      
       const slug = title.replace(/\s+/g, '-').toLowerCase();
       const user = await User.findById(req.session.user._id);
+      
+      // Check if file was uploaded
+      if (!req.file) {
+        req.flash('error', 'Image is required!');
+        return res.redirect('/create-post');
+      }
+      
       const image = req.file.buffer.toString('base64');
 
       // Create new post
@@ -159,9 +183,39 @@ router.post(
 );
 
 // Delete post
-router.route('/delete-post/:id').delete(async function (req, res) {
-  await Post.findByIdAndDelete(req.params.id);
-  res.redirect('/my-posts');
+router.route('/delete-post/:id').delete(protectedRoute, async function (req, res) {
+  try {
+    // Find the post
+    const post = await Post.findById(req.params.id);
+    
+    // Check if post exists
+    if (!post) {
+      req.flash('error', 'Post not found!');
+      return res.redirect('/my-posts');
+    }
+    
+    // Check if the user is the owner of the post
+    if (post.user.toString() !== req.session.user._id.toString()) {
+      req.flash('error', 'You are not authorized to delete this post!');
+      return res.redirect('/my-posts');
+    }
+    
+    // Delete the post
+    await Post.findByIdAndDelete(req.params.id);
+    
+    // Remove post reference from user's posts array
+    await User.updateOne(
+      { _id: req.session.user._id },
+      { $pull: { posts: req.params.id } }
+    );
+    
+    req.flash('success', 'Post deleted successfully!');
+    res.redirect('/my-posts');
+  } catch (error) {
+    console.error(error);
+    req.flash('error', 'Failed to delete post!');
+    res.redirect('/my-posts');
+  }
 });
 
 export default router;
