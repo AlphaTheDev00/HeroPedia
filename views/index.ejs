@@ -1,23 +1,6 @@
 <%- include('partials/header') %>
 <div class="container my-4">
-  <!-- Search form -->
-  <div class="row mb-4">
-    <div class="col-12">
-      <form action="/search" method="GET">
-        <div class="input-group">
-          <input 
-            type="text" 
-            name="q" 
-            class="form-control" 
-            placeholder="Search posts..." 
-            value="<%= searchQuery || '' %>"
-            required
-          >
-          <button type="submit" class="btn btn-primary">Search</button>
-        </div>
-      </form>
-    </div>
-  </div>
+  <!-- Main content -->
 
   <div class="row g-4">
     <% if (posts && posts.length > 0) { %> 

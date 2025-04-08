@@ -1,0 +1,59 @@
+/* Dark mode transitions and custom styles */
+:root {
+  --transition-speed: 0.3s;
+}
+
+body {
+  transition: background-color var(--transition-speed), color var(--transition-speed);
+}
+
+.card, .navbar, .btn, .form-control, .pagination {
+  transition: background-color var(--transition-speed), 
+              color var(--transition-speed), 
+              border-color var(--transition-speed);
+}
+
+/* Dark mode toggle button styling */
+#darkModeToggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem;
+  border-radius: 50%;
+  transition: background-color 0.2s;
+}
+
+#darkModeToggle:hover {
+  background-color: rgba(var(--bs-primary-rgb), 0.1);
+}
+
+#darkModeToggle i {
+  font-size: 1.2rem;
+}
+
+/* Custom dark mode enhancements */
+[data-bs-theme="dark"] .card {
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.3) !important;
+}
+
+[data-bs-theme="dark"] .navbar {
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Improved contrast for text in dark mode */
+[data-bs-theme="dark"] .text-secondary {
+  color: #a8c7fa !important;
+}
+
+/* Improved card styling in dark mode */
+[data-bs-theme="dark"] .card-footer {
+  border-top-color: rgba(255, 255, 255, 0.1);
+  background-color: rgba(0, 0, 0, 0.2);
+}
+
+/* Improved button hover states in dark mode */
+[data-bs-theme="dark"] .btn-primary:hover {
+  background-color: #0d6efd;
+  filter: brightness(1.2);
+}
