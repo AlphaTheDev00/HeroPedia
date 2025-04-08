@@ -1,78 +1,69 @@
 import express from 'express';
-import connectDB from '../../db.js';
-import authRoutes from '../../routes/authRoutes.js';
-import postRoutes from '../../routes/postRoutes.js';
-import cookieParser from 'cookie-parser';
-import session from 'express-session';
-import flash from 'connect-flash';
 import dotenv from 'dotenv';
-import path from 'path';
-import MongoStore from 'connect-mongo';
-import serverless from 'serverless-http';
-import methodOverride from 'method-override';
 import mongoose from 'mongoose';
+import serverless from 'serverless-http';
+
+// Initialize express app
 const app = express();
+
+// Load environment variables
 dotenv.config();
 
-// Log environment variables (without sensitive info)
-console.log('Environment:', process.env.NODE_ENV);
-console.log('MongoDB URI exists:', !!process.env.MONGO_DB_URI);
-
-// Connect to MongoDB
-connectDB().catch(err => {
-  console.error('Failed to connect to MongoDB:', err.message);
+// Simple route to test if the function is working
+app.get('/', async (req, res) => {
+  try {
+    // Log environment info (without sensitive details)
+    console.log('Environment:', process.env.NODE_ENV);
+    console.log('MongoDB URI exists:', !!process.env.MONGO_DB_URI);
+    
+    // Attempt to connect to MongoDB
+    const mongoUri = process.env.MONGO_DB_URI;
+    if (!mongoUri) {
+      return res.status(500).json({ error: 'MongoDB URI is not defined in environment variables' });
+    }
+    
+    // Connect with options
+    const options = {
+      serverSelectionTimeoutMS: 5000,
+      socketTimeoutMS: 45000,
+      family: 4, // Use IPv4, skip trying IPv6
+    };
+    
+    await mongoose.connect(mongoUri, options);
+    
+    return res.status(200).json({
+      message: 'MongoDB connection successful',
+      status: 'online'
+    });
+  } catch (error) {
+    console.error('Error:', error.message);
+    return res.status(500).json({
+      error: 'Failed to connect to MongoDB',
+      message: error.message
+    });
+  }
 });
 
-// middlewares
-app.use(methodOverride('_method'));
+// Basic middleware for JSON parsing
 app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
 
-// make uploads directory as static
-app.use('/public', express.static(path.join(process.cwd(), 'public')));
-
-// cookie middleware
-app.use(cookieParser(process.env.COOKIE_SECRET));
-
-// session middleware
-app.use(
-  session({
-    secret: process.env.SESSION_SECRET,
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-      maxAge: 60000 * 60 * 24 * 7, // 1Week
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-    },
-    store: MongoStore.create({
-      mongoUrl: process.env.MONGO_DB_URI,
-      collectionName: 'sessions',
-    }),
-  })
-);
-
-// flash messages middleware
-app.use(flash());
-
-// store flash message for views
-app.use(function (req, res, next) {
-  res.locals.message = req.flash();
-  next();
+// Add a diagnostic route to check environment variables
+app.get('/env-check', (req, res) => {
+  // Only return non-sensitive environment variables
+  return res.json({
+    NODE_ENV: process.env.NODE_ENV,
+    APP_URL: process.env.APP_URL,
+    MONGO_DB_URI_EXISTS: !!process.env.MONGO_DB_URI
+  });
 });
 
-// store authenticated user's sessions data for view
-app.use(function (req, res, next) {
-  res.locals.user = req.session.user || null;
-  next();
+// Add a fallback route
+app.use('*', (req, res) => {
+  return res.status(200).json({
+    message: 'HeroPedia API is running in diagnostic mode',
+    path: req.originalUrl
+  });
 });
-//set template engine to ejs
-app.set('view engine', 'ejs');
 
-// auth route
-app.use('/', authRoutes);
-
-// post routes
-app.use('/', postRoutes);
-
+// Export the serverless handler
 export const handler = serverless(app);
