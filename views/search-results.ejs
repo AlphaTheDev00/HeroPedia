@@ -28,7 +28,7 @@
         <div class="col-lg-6">
           <div class="card shadow">
             <img
-              src="<%= post.image %>"
+              src="<%= post.image.startsWith('http') ? post.image : `data:image/jpeg;base64,${post.image}` %>"
               class="img-fluid card-img-top"
               alt="wallpaper"
             />

@@ -36,7 +36,7 @@
                 <td><%= post.content.substring(0,50) %>...</td>
                 <td>
                   <img
-                    src="data:image/jpeg;base64,<%= post.image %>"
+                    src="<%= post.image.startsWith('http') ? post.image : `data:image/jpeg;base64,${post.image}` %>"
                     alt="<%= post.title %>"
                     class="img-fluid img-thumbnail"
                     width="100"
