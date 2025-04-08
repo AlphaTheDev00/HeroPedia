@@ -1,80 +1,73 @@
 import express from 'express';
-import serverless from 'serverless-http';
+import connectDB from '../../db.js';
+import authRoutes from '../../routes/authRoutes.js';
+import postRoutes from '../../routes/postRoutes.js';
+import cookieParser from 'cookie-parser';
+import session from 'express-session';
+import flash from 'connect-flash';
+import dotenv from 'dotenv';
 import path from 'path';
-
-// Initialize express app
+import MongoStore from 'connect-mongo';
+import serverless from 'serverless-http';
+import methodOverride from 'method-override';
+import mongoose from 'mongoose';
 const app = express();
+dotenv.config();
 
-// Basic middleware for JSON parsing
+// Log environment variables (without sensitive info)
+console.log('Environment:', process.env.NODE_ENV);
+console.log('MongoDB URI exists:', !!process.env.MONGO_DB_URI);
+
+// Connect to MongoDB
+connectDB().catch(err => {
+  console.error('Failed to connect to MongoDB:', err.message);
+});
+
+// middlewares
+app.use(methodOverride('_method'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-// Serve static HTML for the main route
-app.get('/', (req, res) => {
-  res.send(`
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>HeroPedia - Maintenance Mode</title>
-      <style>
-        body {
-          font-family: 'Arial', sans-serif;
-          line-height: 1.6;
-          color: #333;
-          max-width: 800px;
-          margin: 0 auto;
-          padding: 20px;
-          text-align: center;
-        }
-        h1 {
-          color: #2c3e50;
-          margin-top: 40px;
-        }
-        .hero {
-          background-color: #3498db;
-          color: white;
-          padding: 40px 20px;
-          border-radius: 10px;
-          margin: 30px 0;
-        }
-        .message {
-          background-color: #f8f9fa;
-          border-left: 4px solid #3498db;
-          padding: 15px;
-          margin: 20px 0;
-          text-align: left;
-        }
-        .status {
-          display: inline-block;
-          background-color: #e74c3c;
-          color: white;
-          padding: 5px 10px;
-          border-radius: 4px;
-          margin-top: 10px;
-        }
-      </style>
-    </head>
-    <body>
-      <div class="hero">
-        <h1>HeroPedia</h1>
-        <p>Share your superhero stories with the world</p>
-      </div>
-      
-      <h2>Maintenance Mode</h2>
-      <p>We're currently performing database maintenance to improve your experience.</p>
-      
-      <div class="message">
-        <p><strong>Status Update:</strong> Our team is working on resolving a database connection issue. We expect to be back online shortly.</p>
-        <p>Thank you for your patience!</p>
-      </div>
-      
-      <p class="status">Database Maintenance in Progress</p>
-    </body>
-    </html>
-  `);
+// make uploads directory as static
+app.use('/public', express.static(path.join(process.cwd(), 'public')));
+
+// cookie middleware
+app.use(cookieParser(process.env.COOKIE_SECRET));
+
+// session middleware
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      maxAge: 60000 * 60 * 24 * 7, // 1Week
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+    },
+    store: MongoStore.create({
+      mongoUrl: process.env.MONGO_DB_URI,
+      collectionName: 'sessions',
+    }),
+  })
+);
+
+// flash messages middleware
+app.use(flash());
+
+// store flash message for views
+app.use(function (req, res, next) {
+  res.locals.message = req.flash();
+  next();
 });
+
+// store authenticated user's sessions data for view
+app.use(function (req, res, next) {
+  res.locals.user = req.session.user || null;
+  next();
+});
+//set template engine to ejs
+app.set('view engine', 'ejs');
 
 // Add a diagnostic route to check environment variables
 app.get('/env-check', (req, res) => {
@@ -85,14 +78,10 @@ app.get('/env-check', (req, res) => {
   });
 });
 
-// Add a status route for API clients
-app.get('/api/status', (req, res) => {
-  return res.json({
-    status: 'maintenance',
-    message: 'HeroPedia is currently in maintenance mode due to database connectivity issues.',
-    expectedResolution: 'Our team is working to resolve this issue as soon as possible.'
-  });
-});
+// auth route
+app.use('/', authRoutes);
 
-// Export the serverless handler
+// post routes
+app.use('/', postRoutes);
+
 export const handler = serverless(app);
