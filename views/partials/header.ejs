@@ -17,6 +17,20 @@
             <span class="navbar-toggler-icon"></span>
           </button>
           <div class="collapse navbar-collapse" id="navbarNavDropdown">
+            <!-- Search form in navbar -->
+            <form class="d-flex me-auto" action="/search" method="GET">
+              <div class="input-group">
+                <input 
+                  type="text" 
+                  name="q" 
+                  class="form-control" 
+                  placeholder="Search posts..." 
+                  value="<%= typeof searchQuery !== 'undefined' ? searchQuery : '' %>"
+                  required
+                >
+                <button type="submit" class="btn btn-primary">Search</button>
+              </div>
+            </form>
             <ul class="navbar-nav ms-auto">
               <li class="nav-item">
                 <a class="nav-link <%= active == 'home'?'active':'' %>" href="/">Home</a>

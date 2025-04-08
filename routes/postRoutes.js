@@ -22,14 +22,41 @@ const upload = multer({
   limits: { fileSize: 1 * 1024 * 1024 }, // Limit file size to 1MB
 });
 
-// Route for home page
+// Route for home page with pagination
 router.get('/', async (req, res) => {
   try {
-    const posts = await Post.find().populate('user'); // Fetch posts and populate user data
+    // Get page from query params or default to 1
+    const page = parseInt(req.query.page) || 1;
+    const limit = 6; // Show 6 posts per page
+    const skip = (page - 1) * limit;
+    
+    // Get total count for pagination
+    const total = await Post.countDocuments();
+    const totalPages = Math.ceil(total / limit);
+    
+    // Get posts for current page
+    const posts = await Post.find()
+      .populate('user')
+      .sort({ createdAt: -1 }) // Sort by newest first
+      .skip(skip)
+      .limit(limit);
+    
+    // Get search query if any
+    const searchQuery = req.query.search || '';
+    
     res.render('index.ejs', {
       title: 'Home Page',
       active: 'home',
-      posts, // Pass posts to the template
+      posts,
+      pagination: {
+        page,
+        limit,
+        totalPages,
+        totalItems: total,
+        hasNext: page < totalPages,
+        hasPrev: page > 1
+      },
+      searchQuery
     });
   } catch (error) {
     console.error('Error fetching posts:', error);
@@ -210,11 +237,66 @@ router.route('/delete-post/:id').delete(protectedRoute, async function (req, res
     );
     
     req.flash('success', 'Post deleted successfully!');
-    res.redirect('/my-posts');
+    return res.json({ success: true });
   } catch (error) {
     console.error(error);
-    req.flash('error', 'Failed to delete post!');
-    res.redirect('/my-posts');
+    return res.status(500).json({ error: 'Something went wrong!' });
+  }
+});
+
+// Search route
+router.get('/search', async (req, res) => {
+  try {
+    const searchQuery = req.query.q || '';
+    
+    if (!searchQuery) {
+      return res.redirect('/');
+    }
+    
+    // Get page from query params or default to 1
+    const page = parseInt(req.query.page) || 1;
+    const limit = 6; // Show 6 posts per page
+    const skip = (page - 1) * limit;
+    
+    // Create search query for MongoDB
+    const searchRegex = new RegExp(searchQuery, 'i');
+    const searchFilter = {
+      $or: [
+        { title: searchRegex },
+        { content: searchRegex }
+      ]
+    };
+    
+    // Get total count for pagination
+    const total = await Post.countDocuments(searchFilter);
+    const totalPages = Math.ceil(total / limit);
+    
+    // Get posts for current page that match search query
+    const posts = await Post.find(searchFilter)
+      .populate('user')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+    
+    res.render('search-results', {
+      title: `Search Results for "${searchQuery}"`,
+      active: 'search',
+      posts,
+      searchQuery,
+      pagination: {
+        page,
+        limit,
+        totalPages,
+        totalItems: total,
+        hasNext: page < totalPages,
+        hasPrev: page > 1
+      },
+      resultsCount: total
+    });
+  } catch (error) {
+    console.error('Error searching posts:', error);
+    req.flash('error', 'Unable to search posts at this time.');
+    res.redirect('/');
   }
 });
 
