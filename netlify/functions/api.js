@@ -10,10 +10,18 @@ import path from 'path';
 import MongoStore from 'connect-mongo';
 import serverless from 'serverless-http';
 import methodOverride from 'method-override';
+import mongoose from 'mongoose';
 const app = express();
 dotenv.config();
 
-connectDB();
+// Log environment variables (without sensitive info)
+console.log('Environment:', process.env.NODE_ENV);
+console.log('MongoDB URI exists:', !!process.env.MONGO_DB_URI);
+
+// Connect to MongoDB
+connectDB().catch(err => {
+  console.error('Failed to connect to MongoDB:', err.message);
+});
 
 // middlewares
 app.use(methodOverride('_method'));
