@@ -60,7 +60,7 @@ To run this project locally, follow these steps:
 
 ## ⏱️ Timeframe & Working Team
 
-⌛ This project was completed as a **solo project** over a one-week sprint (April 1-8, 2025). I was responsible for all aspects of the application from planning to deployment, including debugging and feature enhancement.
+⌛ This project was completed as a **solo project** over a one-week sprint. I was responsible for all aspects of the application from planning to deployment, including debugging and feature enhancement.
 
 ## 🔧 Technologies Used
 
