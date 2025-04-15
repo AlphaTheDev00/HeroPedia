@@ -769,12 +769,6 @@ Deploying to Netlify with serverless functions taught me about modern deployment
 - Managing database connections in a serverless context
 - Continuous deployment workflows
 
-## 🐛 Bugs
-
-- **Search Pagination Issue**: When searching with a query that returns multiple pages of results, the pagination links don't maintain the search query parameter, causing the search context to be lost when navigating between pages.
-
-- **Mobile Menu Toggle**: On some mobile devices, the navbar toggle button requires double-tapping to open the menu.
-
 ## 💡 Future Improvements
 
 ### Feature Enhancements
@@ -801,6 +795,9 @@ This project taught me the importance of comprehensive error handling in web app
 - The password reset link in emails contains a hardcoded URL that may not work in all environments if the APP_URL environment variable is not set.
 - There's no validation for empty fields in the post creation form, which could lead to posts with missing content.
 - The delete post functionality doesn't check if the user is the owner of the post before deletion.
+- - **Search Pagination Issue**: When searching with a query that returns multiple pages of results, the pagination links don't maintain the search query parameter, causing the search context to be lost when navigating between pages.
+
+- **Mobile Menu Toggle**: On some mobile devices, the navbar toggle button requires double-tapping to open the menu.
 
 ## 🚀 Deployment Instructions
 
