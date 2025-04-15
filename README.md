@@ -685,6 +685,8 @@ Working with MongoDB and Mongoose deepened my understanding of NoSQL databases a
 Implementing user authentication from scratch gave me valuable insights into security best practices, including password hashing, session management, and protected routes.
 
 ### 🗺️ EJS Templating
+EJS allows dynamic rendering of hero data by embedding JavaScript into HTML. It makes it easier to create interactive and data-driven pages by passing server-side data into the front-end templates. Common elements such as headers and footers are modularized using EJS partials.
+
 ## 💥 Challenges
 
 ### Image Display Issues
