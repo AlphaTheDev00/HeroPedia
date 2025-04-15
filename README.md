@@ -837,3 +837,13 @@ Alternatively, you can deploy manually:
 - Create an admin dashboard for content moderation
 - Add unit and integration tests to ensure code quality and prevent regressions
 - Implement a more secure token generation method for password reset
+
+
+
+  
+---
+
+📜 License
+
+This project is licensed under the MIT License – see the LICENSE file for details.
+
